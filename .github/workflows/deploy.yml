@@ -1,1 +1,42 @@
+name: Deploy Capstone Website to AKS
 
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: capstone
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Azure Login
+      uses: azure/login@v2
+      with:
+        creds: >
+          {
+            "clientId":"${{ secrets.AZURE_CLIENT_ID }}",
+            "clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}",
+            "subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}",
+            "tenantId":"${{ secrets.AZURE_TENANT_ID }}"
+          }
+
+    - name: Login to ACR
+      run: |
+        az acr login --name ${{ secrets.ACR_NAME }}
+
+    - name: Build Docker Image
+      run: |
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/capstone:${{ github.sha }} .
+
+    - name: Push Docker Image
+      run: |
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/capstone:${{ github.sha }}
+
+    - name: Get AKS Credentials
