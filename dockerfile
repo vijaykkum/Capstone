@@ -1,7 +1,9 @@
-FROM ubutnu:latest
+FROM ubuntu:latest
 
-RUN apt update && apt install apache2 -y
+RUN apt-get update && apt-get install -y apache2
 
-ADD . /var/www/html
+COPY index.html /var/www/html/index.html
 
-ENTRYPOINT apachectl -D FOREGROUND
+EXPOSE 80
+
+CMD ["apachectl", "-D", "FOREGROUND"]
